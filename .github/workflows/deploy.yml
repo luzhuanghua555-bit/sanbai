@@ -35,7 +35,7 @@ jobs:
 
       - name: Build project
         # In Vite, base path is needed for GH Pages. We pass it inline.
-        run: npx vite build --base=./
+        run: npx vite build --base=/todo/
         env:
           # Change this URL to your Render API URL after you deploy to Render!
           VITE_API_URL: https://zhouzhou-api.onrender.com

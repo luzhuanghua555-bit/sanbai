@@ -1,7 +1,7 @@
 {
-  "name": "zhouzhou-server",
+  "name": "todo-server",
   "version": "1.0.0",
-  "description": "Backend API for Zhouzhou Todo",
+  "description": "Backend API for Todo",
   "main": "index.js",
   "type": "module",
   "scripts": {
