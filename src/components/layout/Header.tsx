@@ -1,4 +1,4 @@
-import { Search, Sun, Moon, X, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Search, X, Plus, LogOut, User as UserIcon } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { VIEWS } from '../../types';
@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { TagFilter } from '../common/TagFilter';
 
 export function Header() {
-  const { currentView, isDarkMode, toggleDarkMode, searchQuery, setSearchQuery, openCreateModal, openAuthModal } = useUIStore();
+  const { currentView, searchQuery, setSearchQuery, openCreateModal, openAuthModal } = useUIStore();
   const { logout, user, isAuthenticated } = useAuthStore();
   const viewConfig = VIEWS.find(v => v.type === currentView);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -56,14 +56,6 @@ export function Header() {
           <kbd>/</kbd>
         )}
       </div>
-
-      <button
-        onClick={toggleDarkMode}
-        title={isDarkMode ? '切换浅色模式' : '切换深色模式'}
-        className="icon-btn"
-      >
-        {isDarkMode ? <Sun /> : <Moon />}
-      </button>
 
       {isAuthenticated ? (
         <div className="flex items-center gap-2">

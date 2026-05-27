@@ -52,52 +52,6 @@
   --r-xl: 18px;
 }
 
-/* === Dark Mode =========================================== */
-.dark {
-  /* Surfaces */
-  --bg:           #141311;
-  --surface:      #1C1A18;
-  --surface-2:    #24211E;
-  --surface-3:    #2E2A26;
-  --hover:        rgba(255, 253, 248, 0.04);
-
-  /* Borders */
-  --line:         rgba(255, 253, 248, 0.08);
-  --line-soft:    rgba(255, 253, 248, 0.04);
-  --line-strong:  rgba(255, 253, 248, 0.14);
-
-  /* Text */
-  --ink-1:        #E6E2D5;
-  --ink-2:        #B3AE9F;
-  --ink-3:        #8A8579;
-  --ink-4:        #56524A;
-
-  /* Brand */
-  --brand:        #A3BFA9;
-  --brand-soft:   rgba(163, 191, 169, 0.15);
-  --brand-ink:    #1F1B14;
-
-  /* Functional */
-  --warn:         #D49B45;
-  --warn-soft:    rgba(212, 155, 69, 0.15);
-  --danger:       #C95A4C;
-  --danger-soft:  rgba(201, 90, 76, 0.15);
-  --info:         #6B8FA6;
-  --info-soft:    rgba(107, 143, 166, 0.15);
-  --muted:        #8A8579;
-  --muted-soft:   rgba(138, 133, 121, 0.15);
-
-  /* Tags (Slightly brighter/adjusted for dark background) */
-  --tag-sage:     #769A74;
-  --tag-clay:     #CC8F3A;
-  --tag-rust:     #C45446;
-  --tag-slate:    #6787A1;
-  --tag-plum:     #967098;
-  --tag-ochre:    #A88E45;
-  --tag-teal:     #529194;
-  --tag-rose:     #BA617A;
-}
-
 /* === Reset / Base ======================================== */
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #root { margin: 0; padding: 0; height: 100vh; overflow: hidden; }
@@ -726,16 +680,12 @@ input, textarea { font-family: inherit; }
 
 /* ===== Per-quadrant fills ===== */
 .quad.q1, .quad.q2 { box-shadow: 0 1px 2px rgba(31,27,20,.02), 0 8px 24px rgba(31,27,20,.04); }
-.dark .quad.q1, .dark .quad.q2 { box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.3); }
 
 .quad.q1 { background: var(--danger-soft); border-color: rgba(168,70,58,.22); }
-.dark .quad.q1 { border-color: rgba(201,90,76,.15); }
 
 .quad.q2 { background: var(--brand-soft);  border-color: rgba(45,70,54,.22); }
-.dark .quad.q2 { border-color: rgba(163,191,169,.15); }
 
 .quad.q3 { background: var(--warn-soft);   border-color: rgba(176,122,44,.18); padding: 14px 16px; }
-.dark .quad.q3 { border-color: rgba(212,155,69,.15); }
 
 .quad.q4 { background: var(--surface-2);   border-color: var(--line);          padding: 14px 16px; }
 

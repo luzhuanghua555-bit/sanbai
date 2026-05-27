@@ -261,7 +261,7 @@ export function TodoForm({ onClose }: TodoFormProps) {
             
             {/* Recent Tags Suggestions */}
             {globalTags.filter(t => !tags.includes(t)).length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {[...globalTags].filter(t => !tags.includes(t)).reverse().slice(0, 5).map(tag => (
                   <button
                     key={tag}
@@ -269,7 +269,7 @@ export function TodoForm({ onClose }: TodoFormProps) {
                     onClick={() => {
                       setTags([...tags, tag]);
                     }}
-                    className="inline-flex items-center px-2 py-0.5 text-[var(--bg)] rounded-full text-[11px] font-medium shadow-sm hover:opacity-90 transition-opacity" style={{ background: getTagColor(tag) }}
+                    className="inline-flex items-center px-2 py-1 text-[var(--ink-2)] bg-[var(--surface-2)] border border-[var(--line-soft)] rounded-md text-[11px] font-medium hover:bg-[var(--hover)] hover:text-[var(--ink-1)] transition-colors"
                   >
                     + {tag}
                   </button>
