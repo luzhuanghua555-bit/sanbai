@@ -81,10 +81,10 @@ export function Header() {
       ) : (
         <button
           onClick={openAuthModal}
-          className="icon-btn hover:!text-[var(--brand)] flex items-center gap-1.5 px-3 w-auto rounded-full bg-[var(--surface-2)] border border-[var(--line-soft)] text-[13px] font-medium"
+          className="flex items-center justify-center gap-1.5 px-4 h-8 rounded-full bg-[var(--surface-2)] border border-[var(--line-soft)] text-[13px] font-medium text-[var(--ink-2)] hover:bg-[var(--hover)] hover:text-[var(--ink-1)] transition-colors"
         >
           <UserIcon size={14} />
-          登录
+          <span>登录</span>
         </button>
       )}
 
