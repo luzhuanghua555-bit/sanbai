@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, Pencil, Calendar } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -8,6 +8,7 @@ import { PRIORITY_LABELS } from '../../types';
 import { useTodoStore } from '../../store/todoStore';
 import { useUIStore } from '../../store/uiStore';
 import { formatDateShort } from '../../utils/dateUtils';
+import { getTagColor } from '../../utils/colorUtils';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 
 export interface TodoItemProps {
@@ -48,30 +49,42 @@ export function TodoItem({ todo, showDate = true, variant = 'row' }: TodoItemPro
         <div
           ref={setNodeRef}
           style={style}
+          className={clsx(
+            "card",
+            priCls,
+            doneCls,
+            isDragging && "opacity-50 ring-2 ring-[var(--brand)]"
+          )}
           {...attributes}
           {...listeners}
           onClick={() => openEditModal(todo.id)}
-          className={clsx('card', priCls, doneCls, isDragging && 'opacity-50')}
         >
           <div className="ttl">
-            <div
-              className={clsx('check', isDone ? 'done' : '')}
-              onClick={(e) => { e.stopPropagation(); handleCheck(); }}
-            />
-            <span className={isDone ? 'line-through text-[var(--ink-3)]' : ''}>{todo.title}</span>
-          </div>
-          <div className="meta">
-            {showDate && todo.dueDate && (
-              <span className="dt"><Calendar size={11} /> {formatDateShort(todo.dueDate)}</span>
-            )}
-            {todo.priority !== 'none' && (
-              <span className={`chip ${todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info'}`}>
-                <span className={`dot ${todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info'}`} />
-                {PRIORITY_LABELS[todo.priority].replace('优先级', '')}
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCheck(); }}
+                className={clsx("check", isDone && "bg-[var(--line-strong)] done")}
+              />
+              <span className={clsx("name", isDone && "line-through text-[var(--ink-4)]")}>
+                {todo.title}
               </span>
-            )}
-            {todo.status === 'in_progress' && <span className="chip warn">进行中</span>}
-          </div>
+            </div>
+
+          {!isDone && (todo.priority !== 'none' || todo.dueDate || (todo.tags && todo.tags.length > 0)) && (
+            <div className="meta">
+              {todo.priority !== 'none' && (
+                <span className={clsx("chip", todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : '')}>
+                  <span className="dot"></span>
+                  {todo.priority === 'high' ? '高' : todo.priority === 'medium' ? '中' : '低'}
+                </span>
+              )}
+              {showDate && todo.dueDate && <span>{formatDateShort(todo.dueDate)}</span>}
+              {todo.tags?.map(tag => (
+                <span key={tag} className="tag text-[var(--bg)] shadow-sm font-medium px-1.5 py-0.5 rounded text-[10px]" style={{ background: getTagColor(tag) }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
              <button onClick={(e) => { e.stopPropagation(); openEditModal(todo.id); }} className="p-1 text-[var(--ink-3)] hover:text-[var(--ink-1)]"><Pencil size={11} /></button>
@@ -109,6 +122,11 @@ export function TodoItem({ todo, showDate = true, variant = 'row' }: TodoItemPro
         <div className="task-main">
           <div className="task-title">{todo.title}</div>
           <div className="task-meta">
+            {todo.tags?.map(tag => (
+              <span key={tag} className="tag text-[var(--bg)] shadow-sm font-medium" style={{ background: getTagColor(tag) }}>
+                {tag}
+              </span>
+            ))}
             {todo.priority !== 'none' && (
               <span className={`chip ${todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info'}`}>
                 <span className={`dot ${todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info'}`} />

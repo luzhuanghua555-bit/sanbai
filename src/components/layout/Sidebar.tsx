@@ -1,4 +1,4 @@
-import { CalendarDays, Kanban, Calendar, LayoutGrid, Plus, } from 'lucide-react';
+import { CalendarDays, Kanban, Calendar, LayoutGrid, Plus, Tag as TagIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ViewType } from '../../types';
 import { VIEWS } from '../../types';
@@ -14,7 +14,7 @@ const VIEW_ICONS: Record<ViewType, React.ElementType> = {
 };
 
 export function Sidebar() {
-  const { currentView, setView, openCreateModal, openListModal } = useUIStore();
+  const { currentView, setView, openCreateModal, openListModal, openTagModal } = useUIStore();
   const { todos } = useTodoStore();
 
   const pendingCount = todos.filter(t => t.status === 'todo' || t.status === 'in_progress').length;
@@ -48,6 +48,13 @@ export function Sidebar() {
         <Plus size={14} />
         新建待办
       </button>
+
+      <div className="flex flex-col gap-2 mt-4 px-4">
+        <button onClick={openTagModal} className="side-nav-item w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--ink-2)] hover:bg-[var(--hover)] rounded-xl transition-colors">
+          <TagIcon size={16} />
+          <span>标签管理</span>
+        </button>
+      </div>
 
       <div className="side-nav-label">视图</div>
       <nav className="side-nav">

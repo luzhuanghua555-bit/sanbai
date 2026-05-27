@@ -5,7 +5,9 @@ import { clsx } from 'clsx';
 
 import { useTodoStore } from '../../store/todoStore';
 
-export function AuthPage() {
+import { useUIStore } from '../../store/uiStore';
+
+export function AuthModal() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +16,9 @@ export function AuthPage() {
   
   const login = useAuthStore(state => state.login);
   const fetchFromCloud = useTodoStore(state => state.fetchFromCloud);
+  const { isAuthModalOpen, closeAuthModal } = useUIStore();
+
+  if (!isAuthModalOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,12 +36,13 @@ export function AuthPage() {
       // After login, fetch the latest todos from our cloud!
       await fetchFromCloud();
       setIsLoading(false);
+      closeAuthModal();
     }, 800);
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-[var(--bg)] p-6">
-      <div className="w-full max-w-[400px] flex flex-col items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6" onClick={closeAuthModal}>
+      <div className="w-full max-w-[400px] flex flex-col items-center animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
         
         {/* Brand Header */}
         <div className="flex flex-col items-center gap-4 mb-10">

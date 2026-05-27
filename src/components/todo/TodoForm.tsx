@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Calendar, Tag, X, Flag, LayoutGrid, AlignLeft } from 'lucide-react';
+import { Calendar, Tag, X, Flag, LayoutGrid, AlignLeft, Trash2 } from 'lucide-react';
+import { getTagColor } from '../../utils/colorUtils';
 import { clsx } from 'clsx';
 import type { Priority, TodoStatus, Quadrant, CreateTodoInput } from '../../types';
 import { QUADRANT_LABELS } from '../../types';
@@ -18,7 +19,7 @@ interface TodoFormProps {
 }
 
 export function TodoForm({ onClose }: TodoFormProps) {
-  const { todos, addTodo, updateTodo } = useTodoStore();
+  const { todos, globalTags, addTodo, updateTodo } = useTodoStore();
   const { editingTodoId, defaultDueDate, defaultStatus, defaultQuadrant } = useUIStore();
 
   const isEditing = !!editingTodoId;
@@ -54,24 +55,40 @@ export function TodoForm({ onClose }: TodoFormProps) {
   const handleSubmit = () => {
     if (!title.trim()) return;
 
+    let finalTags = tags;
+    const trimmedInput = tagInput.trim();
+    if (trimmedInput && !tags.includes(trimmedInput)) {
+      finalTags = [...tags, trimmedInput];
+    }
+
+    // Auto-save any new tags to global
+    finalTags.forEach(t => useTodoStore.getState().addGlobalTag(t));
+
     if (isEditing && editingTodo) {
       updateTodo(editingTodo.id, {
         title: title.trim(),
         note: note || undefined,
         dueDate: dueDate || undefined,
-        priority, status, quadrant, tags,
+        priority, status, quadrant, tags: finalTags,
       });
     } else {
       const input: CreateTodoInput = {
         title: title.trim(),
         note: note || undefined,
         dueDate: dueDate || undefined,
-        priority, status, quadrant, tags,
+        priority, status, quadrant, tags: finalTags,
         sortOrder: getNextSortOrder(todos),
       };
       addTodo(input);
     }
     onClose();
+  };
+
+  const handleDelete = () => {
+    if (isEditing && editingTodo) {
+      useTodoStore.getState().deleteTodo(editingTodo.id);
+      onClose();
+    }
   };
 
   const QUADRANT_CONFIG_FORM: Record<Quadrant, { activeCls: string; emoji: string }> = {
@@ -222,9 +239,9 @@ export function TodoForm({ onClose }: TodoFormProps) {
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map(tag => (
-                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-full text-xs">
+                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] text-[var(--bg)] font-medium shadow-sm transition-transform hover:scale-105" style={{ background: getTagColor(tag) }}>
                     {tag}
-                    <button onClick={() => removeTag(tag)} className="hover:text-purple-800 dark:hover:text-purple-200 transition-colors">
+                    <button type="button" onClick={() => removeTag(tag)} className="hover:bg-black/20 rounded-full p-0.5 transition-colors">
                       <X size={10} />
                     </button>
                   </span>
@@ -241,25 +258,56 @@ export function TodoForm({ onClose }: TodoFormProps) {
                 className="flex-1 text-xs px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 placeholder:text-gray-300 dark:placeholder:text-gray-600 transition-all"
               />
             </div>
+            
+            {/* Recent Tags Suggestions */}
+            {globalTags.filter(t => !tags.includes(t)).length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {[...globalTags].filter(t => !tags.includes(t)).reverse().slice(0, 5).map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      setTags([...tags, tag]);
+                    }}
+                    className="inline-flex items-center px-2 py-0.5 text-[var(--bg)] rounded-full text-[11px] font-medium shadow-sm hover:opacity-90 transition-opacity" style={{ background: getTagColor(tag) }}
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-slate-900/60">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-sm rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        >
-          取消
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={!title.trim()}
-          className="px-5 py-2 text-sm rounded-xl bg-blue-500 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition-colors shadow-sm shadow-blue-500/30"
-        >
-          {isEditing ? '保存更改' : '创建待办'}
-        </button>
+      <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-slate-900/60">
+        <div>
+          {isEditing && (
+            <button
+              onClick={handleDelete}
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+              title="删除待办"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm font-medium rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+            className="primary-btn !px-6 !py-2.5 !h-auto !w-auto text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <span>{isEditing ? '保存更改' : '创建待办'}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

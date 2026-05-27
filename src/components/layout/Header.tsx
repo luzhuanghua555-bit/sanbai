@@ -1,12 +1,13 @@
-import { Search, Sun, Moon, X, Plus, LogOut } from 'lucide-react';
+import { Search, Sun, Moon, X, Plus, LogOut, User as UserIcon } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { VIEWS } from '../../types';
 import { useEffect, useRef } from 'react';
+import { TagFilter } from '../common/TagFilter';
 
 export function Header() {
-  const { currentView, isDarkMode, toggleDarkMode, searchQuery, setSearchQuery, openCreateModal } = useUIStore();
-  const { logout, user } = useAuthStore();
+  const { currentView, isDarkMode, toggleDarkMode, searchQuery, setSearchQuery, openCreateModal, openAuthModal } = useUIStore();
+  const { logout, user, isAuthenticated } = useAuthStore();
   const viewConfig = VIEWS.find(v => v.type === currentView);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -28,13 +29,13 @@ export function Header() {
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [openCreateModal]);
+  }, [openCreateModal, isAuthenticated, openAuthModal]);
 
   return (
     <div className="topbar">
-      <div className="crumb">
+      <div className="crumb flex items-center gap-3">
         <h1>{viewConfig?.label}</h1>
-        {/* You can add dynamic subtitle here if needed */}
+        <TagFilter />
       </div>
 
       <div className="search">
@@ -64,13 +65,28 @@ export function Header() {
         {isDarkMode ? <Sun /> : <Moon />}
       </button>
 
-      <button
-        onClick={logout}
-        title={`退出登录 (${user?.name})`}
-        className="icon-btn hover:!text-[var(--danger)]"
-      >
-        <LogOut />
-      </button>
+      {isAuthenticated ? (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={logout}
+            title={`退出登录 (${user?.name})`}
+            className="icon-btn hover:!text-[var(--danger)]"
+          >
+            <LogOut />
+          </button>
+          <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-[var(--brand-ink)] flex items-center justify-center font-bold text-sm shadow-sm cursor-default" title={user?.name}>
+            {user?.name?.[0]?.toUpperCase() || 'U'}
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={openAuthModal}
+          className="icon-btn hover:!text-[var(--brand)] flex items-center gap-1.5 px-3 w-auto rounded-full bg-[var(--surface-2)] border border-[var(--line-soft)] text-[13px] font-medium"
+        >
+          <UserIcon size={14} />
+          登录
+        </button>
+      )}
 
       <button
         onClick={() => openCreateModal()}

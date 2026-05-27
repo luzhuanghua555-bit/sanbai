@@ -62,8 +62,8 @@ function StatusColumn({ status, todos }: StatusColumnProps) {
 
 export function StatusView() {
   const { todos } = useTodoStore();
-  const { searchQuery } = useUIStore();
-  const filtered = filterTodos(todos, searchQuery);
+  const { searchQuery, tagFilter } = useUIStore();
+  const filtered = filterTodos(todos, searchQuery, tagFilter);
   const groups = groupByStatus(filtered);
 
   return (

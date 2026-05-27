@@ -1,24 +1,82 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { useTodoStore } from '../../../store/todoStore';
 import { useUIStore } from '../../../store/uiStore';
 import { groupByDateForCalendar, filterTodos } from '../../../utils/todoUtils';
+import type { Todo } from '../../../types';
 import {
   getCalendarDays, prevMonth, nextMonth, isSameMonthStr,
   isTodayStr, dateToStr,
 } from '../../../utils/dateUtils';
 
+function DraggableEvent({ todo }: { todo: Todo }) {
+  const { openEditModal } = useUIStore();
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: todo.id,
+    data: { type: 'Todo', todo },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={(e) => { e.stopPropagation(); openEditModal(todo.id); }}
+      className={clsx('cal-evt', todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info')}
+    >
+      <span className="name">{todo.title}</span>
+    </div>
+  );
+}
+
+function CalendarCell({ dateStr, isCurrentMonth, isToday, we, dayTodos, dayNum }: any) {
+  const { openCreateModal } = useUIStore();
+  const { setNodeRef, isOver } = useDroppable({
+    id: `timeline-date-${dateStr}`,
+  });
+
+  const count = dayTodos.length;
+  const needsScroll = count > 10;
+  const evtsStyle: React.CSSProperties = needsScroll
+    ? { maxHeight: '280px', overflowY: 'auto' }
+    : {};
+
+  return (
+    <div
+      ref={setNodeRef}
+      onClick={() => openCreateModal(dateStr)}
+      className={clsx('cal-cell', !isCurrentMonth && 'dim', we && 'we', isToday && 'today', isOver && 'ring-2 ring-[var(--brand)] ring-inset')}
+    >
+      <div className="d">{dayNum}</div>
+      <div className="cal-evts" style={evtsStyle}>
+        {dayTodos.map((todo: Todo) => (
+          <DraggableEvent key={todo.id} todo={todo} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CalendarView() {
   const { todos } = useTodoStore();
-  const { searchQuery, calendarCurrentMonth, setCalendarMonth, openCreateModal, openEditModal } = useUIStore();
+  const { searchQuery, tagFilter, calendarCurrentMonth, setCalendarMonth } = useUIStore();
 
-  const filtered = filterTodos(todos, searchQuery);
+  const filtered = filterTodos(todos, searchQuery, tagFilter);
   const byDate = groupByDateForCalendar(filtered);
   const days = getCalendarDays(calendarCurrentMonth);
 
   return (
-    <div className="content">
+    <div className="content" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="cal-head">
         <div className="y">
           {new Date(calendarCurrentMonth).getFullYear()}
@@ -55,24 +113,15 @@ export function CalendarView() {
             const dayTodos = byDate[dateStr] ?? [];
             
             return (
-              <div
+              <CalendarCell
                 key={dateStr}
-                onClick={() => openCreateModal(dateStr)}
-                className={clsx('cal-cell', !isCurrentMonth && 'dim', we && 'we', isToday && 'today')}
-              >
-                <div className="d">{format(date, 'd')}</div>
-                <div className="cal-evts">
-                  {dayTodos.map(todo => (
-                    <div
-                      key={todo.id}
-                      onClick={(e) => { e.stopPropagation(); openEditModal(todo.id); }}
-                      className={clsx('cal-evt', todo.priority === 'high' ? 'danger' : todo.priority === 'medium' ? 'warn' : 'info')}
-                    >
-                      <span className="name">{todo.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                dateStr={dateStr}
+                isCurrentMonth={isCurrentMonth}
+                isToday={isToday}
+                we={we}
+                dayTodos={dayTodos}
+                dayNum={format(date, 'd')}
+              />
             );
           })}
         </div>

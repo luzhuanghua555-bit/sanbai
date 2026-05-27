@@ -68,18 +68,24 @@ export function groupByDate(todos: Todo[]): {
 
 export function groupByDateForCalendar(todos: Todo[]): Record<string, Todo[]> {
   const byDate: Record<string, Todo[]> = {};
+  const todayStr = TODAY();
   for (const todo of todos) {
-    if (!todo.dueDate) continue;
-    if (!byDate[todo.dueDate]) byDate[todo.dueDate] = [];
-    byDate[todo.dueDate].push(todo);
+    // Treat todos without a due date as "today" to sync with TimelineView
+    const date = todo.dueDate || todayStr;
+    if (!byDate[date]) byDate[date] = [];
+    byDate[date].push(todo);
   }
   return byDate;
 }
 
-export function filterTodos(todos: Todo[], searchText: string): Todo[] {
-  if (!searchText.trim()) return todos;
+export function filterTodos(todos: Todo[], searchText: string, tagFilter: string | null = null): Todo[] {
+  let result = todos;
+  if (tagFilter) {
+    result = result.filter(t => t.tags.includes(tagFilter));
+  }
+  if (!searchText.trim()) return result;
   const q = searchText.toLowerCase();
-  return todos.filter(t =>
+  return result.filter(t =>
     t.title.toLowerCase().includes(q) ||
     (t.note?.toLowerCase().includes(q)) ||
     t.tags.some(tag => tag.toLowerCase().includes(q))

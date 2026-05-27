@@ -2,7 +2,7 @@ import { GripVertical, Flag, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { Todo } from '../../types';
 import { PRIORITY_LABELS } from '../../types';
-import { PRIORITY_COLORS } from '../../utils/colorUtils';
+import { getTagColor } from '../../utils/colorUtils';
 import { formatDateShort, isOverdue } from '../../utils/dateUtils';
 
 interface DragOverlayContentProps {
@@ -14,9 +14,8 @@ export function DragOverlayContent({ todo }: DragOverlayContentProps) {
 
   return (
     <div className={clsx(
-      'flex items-start gap-2.5 px-3 py-2.5 rounded-xl border-l-2 shadow-2xl',
+      'flex items-start gap-2.5 px-3 py-2.5 rounded-xl shadow-2xl',
       'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-      PRIORITY_COLORS[todo.priority].border,
       'rotate-2 scale-105 opacity-95 cursor-grabbing',
       'min-w-[200px] max-w-[320px]',
     )}>
@@ -26,7 +25,7 @@ export function DragOverlayContent({ todo }: DragOverlayContentProps) {
         <p className="text-sm text-gray-800 dark:text-gray-100 truncate">{todo.title}</p>
         <div className="flex items-center gap-2 mt-1">
           {todo.priority !== 'none' && (
-            <span className={clsx('text-[10px] font-medium flex items-center gap-0.5', PRIORITY_COLORS[todo.priority].text)}>
+            <span className={clsx('text-[10px] font-medium flex items-center gap-0.5')}>
               <Flag size={9} /> {PRIORITY_LABELS[todo.priority].replace('优先级', '')}
             </span>
           )}
@@ -35,6 +34,11 @@ export function DragOverlayContent({ todo }: DragOverlayContentProps) {
               <Calendar size={9} /> {formatDateShort(todo.dueDate)}
             </span>
           )}
+          {todo.tags?.map(tag => (
+            <span key={tag} className="tag text-[var(--bg)] shadow-sm font-medium" style={{ background: getTagColor(tag) }}>
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
     </div>

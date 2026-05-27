@@ -2,27 +2,26 @@ import { useState, useEffect } from 'react';
 import {
   DndContext, DragOverlay,
   PointerSensor, TouchSensor, useSensor, useSensors,
-  closestCorners,
+  pointerWithin, rectIntersection
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { TodoModal } from './components/todo/TodoModal';
 import { TodoListModal } from './components/todo/TodoListModal';
+import { TagModal } from './components/todo/TagModal';
 import { DragOverlayContent } from './components/dnd/DragOverlayContent';
 import { TimelineView } from './components/views/TimelineView/TimelineView';
 import { StatusView } from './components/views/StatusView/StatusView';
 import { CalendarView } from './components/views/CalendarView/CalendarView';
 import { QuadrantView } from './components/views/QuadrantView/QuadrantView';
-import { AuthPage } from './components/auth/AuthPage';
-import { useAuthStore } from './store/authStore';
+import { AuthModal } from './components/auth/AuthModal';
 import { useTodoStore } from './store/todoStore';
 import { useUIStore } from './store/uiStore';
 import type { TodoStatus, Quadrant } from './types';
 
 function App() {
   const [activeTodoId, setActiveTodoId] = useState<string | null>(null);
-  const { isAuthenticated } = useAuthStore();
   const { todos, reorderTodos, moveTodoToStatus, moveTodoToQuadrant, moveTodoToDate } = useTodoStore();
   const { currentView, isDarkMode } = useUIStore();
 
@@ -40,6 +39,17 @@ function App() {
   );
 
   const activeTodo = activeTodoId ? todos.find(t => t.id === activeTodoId) : null;
+
+  // Custom collision detection strategy for better UX across different views
+  const customCollisionDetection = (args: any) => {
+    // First, let's see if the pointer is currently within any droppable container
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+    // Fallback to rectIntersection for empty columns or edge cases
+    return rectIntersection(args);
+  };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveTodoId(active.id as string);
@@ -72,7 +82,17 @@ function App() {
       return;
     }
 
-    if (todos.find(t => t.id === overId)) {
+    const overTodo = todos.find(t => t.id === overId);
+    if (overTodo) {
+      if (currentView === 'status' && activeTodo?.status !== overTodo.status) {
+        moveTodoToStatus(activeId, overTodo.status);
+      } else if (currentView === 'quadrant' && activeTodo?.quadrant !== overTodo.quadrant) {
+        moveTodoToQuadrant(activeId, overTodo.quadrant as Quadrant);
+      } else if (currentView === 'calendar' && activeTodo?.dueDate !== overTodo.dueDate) {
+        moveTodoToDate(activeId, overTodo.dueDate as string);
+      } else if (currentView === 'timeline' && activeTodo?.dueDate !== overTodo.dueDate) {
+        moveTodoToDate(activeId, overTodo.dueDate as string);
+      }
       reorderTodos(activeId, overId);
     }
   };
@@ -84,14 +104,10 @@ function App() {
     quadrant: <QuadrantView />,
   };
 
-  if (!isAuthenticated) {
-    return <AuthPage />;
-  }
-
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -109,6 +125,8 @@ function App() {
 
       <TodoModal />
       <TodoListModal />
+      <TagModal />
+      <AuthModal />
     </DndContext>
   );
 }

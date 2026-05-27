@@ -25,9 +25,8 @@ function DroppableDay({ dateStr, children }: { dateStr: string; children: React.
 
 export function TimelineView() {
   const { todos } = useTodoStore();
-  const { searchQuery, openCreateModal, collapsedOverdue, toggleOverdue, openListModal } = useUIStore();
-
-  const filtered = filterTodos(todos, searchQuery);
+  const { searchQuery, tagFilter, collapsedOverdue, toggleOverdue, openCreateModal, openListModal } = useUIStore();
+  const filtered = filterTodos(todos, searchQuery, tagFilter);
   const { overdue, today, byDate } = groupByDate(filtered);
   const next7 = getNext7Days().slice(1);
 
@@ -39,7 +38,6 @@ export function TimelineView() {
   return (
     <div className="h-full overflow-y-auto min-h-0">
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-5">
-
         {/* === OVERDUE === */}
         {overdue.length > 0 && (
           <div className="rounded-2xl border border-red-100 dark:border-red-900/40 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">

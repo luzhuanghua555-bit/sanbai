@@ -10,6 +10,7 @@ import { useAuthStore } from './authStore';
 
 interface TodoState {
   todos: Todo[];
+  globalTags: string[];
   fetchFromCloud: () => Promise<void>;
   syncToCloud: () => Promise<void>;
   addTodo: (input: CreateTodoInput) => void;
@@ -21,6 +22,10 @@ interface TodoState {
   moveTodoToStatus: (id: string, status: TodoStatus) => void;
   moveTodoToQuadrant: (id: string, quadrant: Quadrant) => void;
   moveTodoToDate: (id: string, dueDate: string | undefined) => void;
+  
+  // Tag management
+  addGlobalTag: (tag: string) => void;
+  deleteGlobalTag: (tag: string) => void;
 }
 
 // Helper to trigger sync
@@ -35,21 +40,25 @@ export const useTodoStore = create<TodoState>()(
   persist(
     immer((set, get) => ({
       todos: [],
+      globalTags: [],
 
       // Sync methods
       fetchFromCloud: async () => {
         const user = useAuthStore.getState().user;
         if (!user) return;
-        const cloudTodos = await cloudApi.fetchTodos(user.id);
-        if (cloudTodos && cloudTodos.length > 0) {
-          set({ todos: cloudTodos });
+        const cloudData = await cloudApi.fetchTodos(user.id);
+        if (cloudData) {
+          set({ 
+            todos: cloudData.todos || [],
+            globalTags: cloudData.tags || []
+          });
         }
       },
       syncToCloud: async () => {
         const user = useAuthStore.getState().user;
         if (!user) return;
-        const { todos } = get();
-        await cloudApi.syncTodos(user.id, todos);
+        const { todos, globalTags } = get();
+        await cloudApi.syncTodos(user.id, todos, globalTags);
       },
 
       addTodo: (input) => {
@@ -85,23 +94,29 @@ export const useTodoStore = create<TodoState>()(
         triggerSync();
       },
 
-      deleteTodo: (id) => set((state) => {
-        state.todos = state.todos.filter(t => t.id !== id);
-      }),
+      deleteTodo: (id) => {
+        set((state) => {
+          state.todos = state.todos.filter(t => t.id !== id);
+        });
+        triggerSync();
+      },
 
-      toggleComplete: (id) => set((state) => {
-        const todo = state.todos.find(t => t.id === id);
-        if (!todo) return;
-        const now = new Date().toISOString();
-        if (todo.status === 'done') {
-          todo.status = 'todo';
-          todo.completedAt = undefined;
-        } else {
-          todo.status = 'done';
-          todo.completedAt = now;
-        }
-        todo.updatedAt = now;
-      }),
+      toggleComplete: (id) => {
+        set((state) => {
+          const todo = state.todos.find(t => t.id === id);
+          if (!todo) return;
+          const now = new Date().toISOString();
+          if (todo.status === 'done') {
+            todo.status = 'todo';
+            todo.completedAt = undefined;
+          } else {
+            todo.status = 'done';
+            todo.completedAt = now;
+          }
+          todo.updatedAt = now;
+        });
+        triggerSync();
+      },
 
       clearCompleted: () => {
         set((state) => {
@@ -159,11 +174,32 @@ export const useTodoStore = create<TodoState>()(
         });
         triggerSync();
       },
+
+      addGlobalTag: (tag) => {
+        set((state) => {
+          if (!state.globalTags.includes(tag)) {
+            state.globalTags.push(tag);
+          }
+        });
+        triggerSync();
+      },
+
+      deleteGlobalTag: (tag) => {
+        set((state) => {
+          state.globalTags = state.globalTags.filter(t => t !== tag);
+          // Also remove it from all todos
+          state.todos.forEach(todo => {
+            if (todo.tags.includes(tag)) {
+              todo.tags = todo.tags.filter(t => t !== tag);
+            }
+          });
+        });
+        triggerSync();
+      },
     })),
     {
       name: 'zhouzhou-storage',
-      // We still keep local persist, but the app can call fetchFromCloud on load
-      partialize: (state) => ({ todos: state.todos }),
+      partialize: (state) => ({ todos: state.todos, globalTags: state.globalTags }),
     }
   )
 );
