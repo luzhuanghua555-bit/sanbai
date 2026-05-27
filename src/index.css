@@ -52,6 +52,52 @@
   --r-xl: 18px;
 }
 
+/* === Dark Mode =========================================== */
+.dark {
+  /* Surfaces */
+  --bg:           #141311;
+  --surface:      #1C1A18;
+  --surface-2:    #24211E;
+  --surface-3:    #2E2A26;
+  --hover:        rgba(255, 253, 248, 0.04);
+
+  /* Borders */
+  --line:         rgba(255, 253, 248, 0.08);
+  --line-soft:    rgba(255, 253, 248, 0.04);
+  --line-strong:  rgba(255, 253, 248, 0.14);
+
+  /* Text */
+  --ink-1:        #E6E2D5;
+  --ink-2:        #B3AE9F;
+  --ink-3:        #8A8579;
+  --ink-4:        #56524A;
+
+  /* Brand */
+  --brand:        #A3BFA9;
+  --brand-soft:   rgba(163, 191, 169, 0.15);
+  --brand-ink:    #1F1B14;
+
+  /* Functional */
+  --warn:         #D49B45;
+  --warn-soft:    rgba(212, 155, 69, 0.15);
+  --danger:       #C95A4C;
+  --danger-soft:  rgba(201, 90, 76, 0.15);
+  --info:         #6B8FA6;
+  --info-soft:    rgba(107, 143, 166, 0.15);
+  --muted:        #8A8579;
+  --muted-soft:   rgba(138, 133, 121, 0.15);
+
+  /* Tags (Slightly brighter/adjusted for dark background) */
+  --tag-sage:     #769A74;
+  --tag-clay:     #CC8F3A;
+  --tag-rust:     #C45446;
+  --tag-slate:    #6787A1;
+  --tag-plum:     #967098;
+  --tag-ochre:    #A88E45;
+  --tag-teal:     #529194;
+  --tag-rose:     #BA617A;
+}
+
 /* === Reset / Base ======================================== */
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #root { margin: 0; padding: 0; height: 100vh; overflow: hidden; }
@@ -478,22 +524,26 @@ input, textarea { font-family: inherit; }
   border-color: transparent;
   box-shadow: 0 1px 2px rgba(31,27,20,.04);
 }
+.dark .quad.q1 .card, .dark .quad.q2 .card { box-shadow: 0 1px 2px rgba(0,0,0,.15); border-color: rgba(255,255,255,.05); }
+
 .quad.q1 .card:hover, .quad.q2 .card:hover { box-shadow: 0 1px 2px rgba(31,27,20,.04), 0 4px 12px rgba(31,27,20,.06); }
+.dark .quad.q1 .card:hover, .dark .quad.q2 .card:hover { box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 4px 12px rgba(0,0,0,.4); }
 
 /* Q3: compact card */
 .quad.q3 .card {
   border-color: transparent; box-shadow: 0 1px 2px rgba(31,27,20,.03);
   padding: 8px 10px; gap: 6px;
 }
+.dark .quad.q3 .card { box-shadow: 0 1px 2px rgba(0,0,0,.15); border-color: rgba(255,255,255,.03); }
 
 /* Q4: ghost card — no fill, hairline divider, no metadata */
 .quad.q4 .card {
   background: transparent; border: 0;
-  border-bottom: 1px solid rgba(34,30,24,.08);
+  border-bottom: 1px solid var(--line);
   border-radius: 0; padding: 9px 4px; box-shadow: none;
 }
 .quad.q4 .card:last-child { border-bottom: 0; }
-.quad.q4 .card:hover { background: rgba(255,253,248,.5); border-radius: 6px; }
+.quad.q4 .card:hover { background: var(--hover); border-radius: 6px; }
 .card.pri-h::before, .card.pri-m::before, .card.pri-l::before { display: none; }
 
 .card .ttl {
@@ -676,10 +726,18 @@ input, textarea { font-family: inherit; }
 
 /* ===== Per-quadrant fills ===== */
 .quad.q1, .quad.q2 { box-shadow: 0 1px 2px rgba(31,27,20,.02), 0 8px 24px rgba(31,27,20,.04); }
+.dark .quad.q1, .dark .quad.q2 { box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.3); }
+
 .quad.q1 { background: var(--danger-soft); border-color: rgba(168,70,58,.22); }
+.dark .quad.q1 { border-color: rgba(201,90,76,.15); }
+
 .quad.q2 { background: var(--brand-soft);  border-color: rgba(45,70,54,.22); }
+.dark .quad.q2 { border-color: rgba(163,191,169,.15); }
+
 .quad.q3 { background: var(--warn-soft);   border-color: rgba(176,122,44,.18); padding: 14px 16px; }
-.quad.q4 { background: #E6E2D5;            border-color: var(--line);          padding: 14px 16px; }
+.dark .quad.q3 { border-color: rgba(212,155,69,.15); }
+
+.quad.q4 { background: var(--surface-2);   border-color: var(--line);          padding: 14px 16px; }
 
 /* ===== Top accent stripe ===== */
 .quad::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
@@ -695,9 +753,13 @@ input, textarea { font-family: inherit; }
   display: inline-grid; place-items: center; border-radius: 8px; flex-shrink: 0;
 }
 .quad.q1 .q-num { width: 32px; height: 32px; font-size: 15px; background: var(--danger); color: var(--brand-ink); box-shadow: 0 1px 2px rgba(168,70,58,.3); }
+.dark .quad.q1 .q-num { box-shadow: 0 1px 2px rgba(0,0,0,.5); color: #fff; }
+
 .quad.q2 .q-num { width: 32px; height: 32px; font-size: 15px; background: var(--brand);  color: var(--brand-ink); box-shadow: 0 1px 2px rgba(45,70,54,.3); }
+.dark .quad.q2 .q-num { box-shadow: 0 1px 2px rgba(0,0,0,.5); color: #fff; }
+
 .quad.q3 .q-num { width: 24px; height: 24px; font-size: 12px; background: var(--surface); color: var(--warn); }
-.quad.q4 .q-num { width: 22px; height: 22px; font-size: 11px; background: rgba(255,253,248,.6); color: var(--ink-3); }
+.quad.q4 .q-num { width: 22px; height: 22px; font-size: 11px; background: var(--hover); color: var(--ink-3); }
 
 .quad .title { font-weight: 600; color: var(--ink-1); letter-spacing: -.005em; line-height: 1.2; }
 .quad.q1 .title, .quad.q2 .title { font-size: 16px; }
@@ -710,7 +772,7 @@ input, textarea { font-family: inherit; }
   width: 24px; height: 24px; border-radius: var(--r-sm);
   display: grid; place-items: center; color: var(--ink-3);
 }
-.quad-head .add:hover { background: rgba(255,253,248,.6); color: var(--ink-1); }
+.quad-head .add:hover { background: var(--hover); color: var(--ink-1); }
 .quad-head .add svg { width: 14px; height: 14px; stroke-width: 1.8; }
 
 /* ===== Action chip ===== */
@@ -720,8 +782,8 @@ input, textarea { font-family: inherit; }
   border-radius: 999px; margin-bottom: 12px; width: fit-content; letter-spacing: .02em;
 }
 .q-action::before { content: ""; width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
-.quad.q1 .q-action { background: var(--danger); color: var(--brand-ink); }
-.quad.q2 .q-action { background: var(--brand);  color: var(--brand-ink); }
+.quad.q1 .q-action { background: var(--danger); color: var(--surface); }
+.quad.q2 .q-action { background: var(--brand);  color: var(--surface); }
 .quad.q3 .q-action {
   background: var(--surface); color: var(--warn);
   border: 1px solid rgba(176,122,44,.2);
