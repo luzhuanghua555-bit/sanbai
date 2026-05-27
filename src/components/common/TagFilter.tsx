@@ -22,7 +22,8 @@ export function TagFilter() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTagMenu]);
 
-  if (globalTags.length === 0 && !tagFilter) return null;
+  // Removed the early return so the button is always visible
+  // if (globalTags.length === 0 && !tagFilter) return null;
 
   const filteredTags = globalTags.filter(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
