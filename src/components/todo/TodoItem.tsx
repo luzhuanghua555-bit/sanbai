@@ -56,7 +56,7 @@ export function TodoItem({ todo, showDate = true, variant = 'row' }: TodoItemPro
           ref={setNodeRef}
           style={style}
           className={clsx(
-            "card",
+            "card group",
             priCls,
             doneCls,
             isDragging && "opacity-50 ring-2 ring-[var(--brand)]"
@@ -121,7 +121,7 @@ export function TodoItem({ todo, showDate = true, variant = 'row' }: TodoItemPro
         {...attributes}
         {...listeners}
         onClick={() => openEditModal(todo.id)}
-        className={clsx('task', priCls, doneCls, isDragging && 'opacity-50')}
+        className={clsx('task group', priCls, doneCls, isDragging && 'opacity-50')}
       >
         <span className="pri-mark" />
         <div
