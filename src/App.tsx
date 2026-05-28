@@ -16,20 +16,35 @@ import { StatusView } from './components/views/StatusView/StatusView';
 import { CalendarView } from './components/views/CalendarView/CalendarView';
 import { QuadrantView } from './components/views/QuadrantView/QuadrantView';
 import { MonthPlanView, NewTagModal } from './components/views/MonthPlanView';
+import { StatsView } from './components/views/StatsView';
 import { AuthModal } from './components/auth/AuthModal';
 import { useTodoStore } from './store/todoStore';
 import { useUIStore } from './store/uiStore';
 import { useAuthStore } from './store/authStore';
 import { usePlanStore } from './store/planStore';
 import { generateAIPMData } from './utils/mockDataGenerator';
+import { cloudApi } from './api';
 import type { TodoStatus, Quadrant } from './types';
 
 function App() {
   const [activeDragItem, setActiveDragItem] = useState<{ id: string, type: 'todo' | 'project' | 'category' } | null>(null);
   const { todos, reorderTodos, moveTodoToStatus, moveTodoToQuadrant, moveTodoToDate } = useTodoStore();
   const { reorderProjects, reorderCategories } = usePlanStore();
-  const { currentView, isDarkMode, toastMessage } = useUIStore();
+  const { currentView, isDarkMode, toastMessage, isTagModalOpen } = useUIStore();
   const user = useAuthStore(state => state.user);
+
+  // Track views
+  useEffect(() => {
+    if (user) {
+      cloudApi.trackEvent(user.id, `view_${currentView}`);
+    }
+  }, [currentView, user]);
+
+  useEffect(() => {
+    if (user && isTagModalOpen) {
+      cloudApi.trackEvent(user.id, 'view_tag_modal');
+    }
+  }, [isTagModalOpen, user]);
 
   useEffect(() => {
     if (user?.email === '1067363705@qq.com') {
@@ -49,6 +64,11 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Handle standalone stats view
+  if (window.location.search.includes('view=stats')) {
+    return <StatsView />;
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),

@@ -77,6 +77,12 @@ export const useTodoStore = create<TodoState>()(
           };
           state.todos.push(newTodo as any);
         });
+        
+        const user = useAuthStore.getState().user;
+        if (user) {
+          cloudApi.trackEvent(user.id, 'todo_create');
+        }
+        
         triggerSync();
         return newId;
       },

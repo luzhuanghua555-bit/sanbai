@@ -59,6 +59,96 @@ app.post('/api/todos/:userId', async (req, res) => {
   }
 });
 
+// --- Analytics / Stats Endpoints ---
+
+const getTodayDateStr = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Track an event
+app.post('/api/track', async (req, res) => {
+  try {
+    const { userId, event } = req.body; // event: 'register', 'login', 'todo_create', 'view_timeline', 'view_status', 'view_calendar', 'view_quadrant', 'view_monthPlan', 'view_tag_modal'
+    if (!userId || !event) return res.status(400).json({ success: false });
+
+    const today = getTodayDateStr();
+
+    if (event === 'register') {
+      await redis.sadd('stats:users:total', userId);
+      await redis.sadd(`stats:daily:${today}:registered`, userId);
+    } else if (event === 'login') {
+      await redis.sadd(`stats:daily:${today}:login`, userId);
+    } else if (event === 'todo_create') {
+      await redis.sadd('stats:users:has_todo', userId);
+      await redis.sadd(`stats:daily:${today}:todo_create`, userId);
+    } else if (event.startsWith('view_')) {
+      await redis.sadd(`stats:daily:${today}:${event}`, userId);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking event:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Get stats
+app.get('/api/stats', async (req, res) => {
+  try {
+    const today = getTodayDateStr();
+
+    const [
+      totalUsers,
+      totalUsersWithTodo,
+      todayRegistered,
+      todayLogin,
+      todayTodoCreate,
+      todayViewTimeline,
+      todayViewStatus,
+      todayViewCalendar,
+      todayViewQuadrant,
+      todayViewMonthPlan,
+      todayViewTagModal
+    ] = await Promise.all([
+      redis.scard('stats:users:total'),
+      redis.scard('stats:users:has_todo'),
+      redis.scard(`stats:daily:${today}:registered`),
+      redis.scard(`stats:daily:${today}:login`),
+      redis.scard(`stats:daily:${today}:todo_create`),
+      redis.scard(`stats:daily:${today}:view_timeline`),
+      redis.scard(`stats:daily:${today}:view_status`),
+      redis.scard(`stats:daily:${today}:view_calendar`),
+      redis.scard(`stats:daily:${today}:view_quadrant`),
+      redis.scard(`stats:daily:${today}:view_monthPlan`),
+      redis.scard(`stats:daily:${today}:view_tag_modal`)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        totalUsersWithTodo,
+        todayRegistered,
+        todayLogin,
+        todayTodoCreate,
+        todayViewTimeline,
+        todayViewStatus,
+        todayViewCalendar,
+        todayViewQuadrant,
+        todayViewMonthPlan,
+        todayViewTagModal
+      }
+    });
+  } catch (error) {
+    console.error('Error getting stats:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -46,5 +46,29 @@ export const cloudApi = {
       console.error('Failed to sync data to cloud', error);
       return false;
     }
+  },
+
+  async trackEvent(userId: string, event: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE}/api/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, event })
+      });
+    } catch (error) {
+      console.error('Failed to track event', error);
+    }
+  },
+
+  async getStats(): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/stats`);
+      const json = await res.json();
+      if (json.success) return json.data;
+      return null;
+    } catch (error) {
+      console.error('Failed to get stats', error);
+      return null;
+    }
   }
 };

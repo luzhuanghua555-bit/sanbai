@@ -1,4 +1,4 @@
-import { Search, X, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Search, X, Plus, LogOut, User as UserIcon, BarChart2 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { VIEWS } from '../../types';
@@ -60,16 +60,36 @@ export function Header() {
       </div>
 
       {isAuthenticated ? (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={logout}
-            title={`退出登录 (${user?.name})`}
-            className="icon-btn hover:!text-[var(--danger)]"
-          >
-            <LogOut />
-          </button>
-          <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-[var(--brand-ink)] flex items-center justify-center font-bold text-sm shadow-sm cursor-default" title={user?.name}>
+        <div className="flex items-center gap-2 relative group">
+          <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-[var(--brand-ink)] flex items-center justify-center font-bold text-sm shadow-sm cursor-pointer" title={user?.name}>
             {user?.name?.[0]?.toUpperCase() || 'U'}
+          </div>
+          
+          <div className="absolute right-0 top-full mt-1 w-40 bg-[var(--surface)] border border-[var(--line-soft)] rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+            <div className="p-3 border-b border-[var(--line-soft)]">
+              <div className="text-sm font-semibold text-[var(--ink-1)] truncate">{user?.name}</div>
+              <div className="text-xs text-[var(--ink-3)] truncate">{user?.email}</div>
+            </div>
+            
+            <div className="p-1">
+              {user?.email === 'sanbai@qq.com' && (
+                <a
+                  href="?view=stats"
+                  target="_blank"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--ink-2)] hover:text-[var(--brand)] hover:bg-[var(--hover)] rounded-lg transition-colors"
+                >
+                  <BarChart2 size={16} />
+                  <span>数据统计</span>
+                </a>
+              )}
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--danger)] hover:bg-[var(--danger-soft)] rounded-lg transition-colors text-left"
+              >
+                <LogOut size={16} />
+                <span>退出登录</span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (

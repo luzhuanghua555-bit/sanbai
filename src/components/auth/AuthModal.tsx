@@ -4,8 +4,8 @@ import { Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
 
 import { useTodoStore } from '../../store/todoStore';
-
 import { useUIStore } from '../../store/uiStore';
+import { cloudApi } from '../../api';
 
 export function AuthModal() {
   const [isLogin, setIsLogin] = useState(true);
@@ -28,13 +28,18 @@ export function AuthModal() {
     
     // Simulate API Auth
     setTimeout(async () => {
+      const userId = 'user-' + email.replace(/[^a-zA-Z0-9]/g, '');
       login({
-        id: 'user-' + email.replace(/[^a-zA-Z0-9]/g, ''),
+        id: userId,
         email,
         name: isLogin ? email.split('@')[0] : name,
       });
       // After login, fetch the latest todos from our cloud!
       await fetchFromCloud();
+      
+      // Track login/register
+      cloudApi.trackEvent(userId, isLogin ? 'login' : 'register');
+      
       setIsLoading(false);
       closeAuthModal();
     }, 800);
