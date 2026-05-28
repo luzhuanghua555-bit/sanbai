@@ -31,7 +31,7 @@ function App() {
 
   useEffect(() => {
     if (user?.email === '1067363705@qq.com') {
-      const genKey = `hasGeneratedAIPMData_${user.email}`;
+      const genKey = `hasGeneratedAIPMData_v2_${user.email}`;
       if (!localStorage.getItem(genKey)) {
         generateAIPMData();
         localStorage.setItem(genKey, 'true');

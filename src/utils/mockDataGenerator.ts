@@ -60,13 +60,14 @@ export const generateAIPMData = () => {
     const plan = usePlanStore.getState().plans.find(p => p.title === title)!;
     
     // Add Todo
+    const projName = usePlanStore.getState().projects.find(p => p.id === projId)?.name || '';
     const todoId = todoStore.addTodo({
       title,
       status,
       priority,
       quadrant,
       dueDate: getDate(dayOffset),
-      tags: [projId, catId],
+      tags: [projName, catName].filter(Boolean),
       sortOrder: 0
     });
     
